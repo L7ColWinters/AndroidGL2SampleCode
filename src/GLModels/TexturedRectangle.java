@@ -12,7 +12,7 @@ public class TexturedRectangle extends GLModelInterface {
 	private int mSquarePositionsBufferIdx;
 	private int mSquareTexCoordsBufferIdx;
 	
-	public TexturedRectangle(int bitmapWidth, int bitmapHeight,Vector3D offset,int positionHandle,int texCoord,int dataHandle, int uniformHandle){
+	public TexturedRectangle(float bitmapWidth, float bitmapHeight,Vector3D offset,int positionHandle,int texCoord,int dataHandle, int uniformHandle){
 		super(2);
 		mPositionHandle = positionHandle;
 		mTextureCoordHandle = texCoord;
@@ -59,7 +59,6 @@ public class TexturedRectangle extends GLModelInterface {
 		// Clear the currently bound buffer (so future OpenGL calls do not use this buffer).
 		GLES20.glBindBuffer(GLES20.GL_ARRAY_BUFFER, 0);
 
-		// Draw the cubes.
 		GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, numTriangles*3);
 	}
 
@@ -72,15 +71,13 @@ public class TexturedRectangle extends GLModelInterface {
 	@Override
 	public FloatBuffer createObject(Vector3D offset,float[] args) {
 		float [] mPositionData = new float[]{
-				
 			args[0] + offset.getX(), offset.getY(), offset.getZ(),
 			offset.getX(),offset.getY(),offset.getZ(),
-			offset.getX(),offset.getY() + args[1],offset.getZ(),
+			offset.getX(),offset.getY() - args[1],offset.getZ(),
 			
 			args[0] + offset.getX(), offset.getY(), offset.getZ(),
-			offset.getX(),offset.getY() + args[1],offset.getZ(),
-			args[0] + offset.getX(),args[1] + offset.getY(),offset.getZ()
-			
+			offset.getX(),offset.getY() - args[1],offset.getZ(),
+			args[0] + offset.getX(),offset.getY() - args[1],offset.getZ()
 		};
 		return getBufferFromArray(mPositionData);
 	}
@@ -88,15 +85,13 @@ public class TexturedRectangle extends GLModelInterface {
 	@Override
 	public FloatBuffer createTexCoords() {
 		float [] mTextureCoords = new float[]{
-				
-			1f,1f,
+			1f,0f,
+			0f,0f,
 			0f,1f,
-			0f,0f,
 			
-			1f,1f,
-			0f,0f,
-			1f,0f
-			
+			1f,0f,
+			0f,1f,
+			1f,1f
 		};
 		return getBufferFromArray(mTextureCoords);
 	}

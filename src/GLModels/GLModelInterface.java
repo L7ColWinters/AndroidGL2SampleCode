@@ -26,6 +26,7 @@ public abstract class GLModelInterface {
 	
 	public GLModelInterface(int numTriangles){
 		this.numTriangles = numTriangles;
+		Matrix.setIdentityM(mModelMatrix, 0);
 	}
 	
 	public abstract void render();

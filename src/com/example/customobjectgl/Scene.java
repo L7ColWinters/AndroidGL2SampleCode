@@ -16,11 +16,10 @@ import GLUtils.TextureHelper;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.BitmapFactory.Options;
+import android.graphics.PixelFormat;
 import android.opengl.GLES20;
 import android.opengl.GLSurfaceView;
 import android.opengl.Matrix;
-import android.opengl.GLSurfaceView.Renderer;
 import android.util.DisplayMetrics;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
@@ -37,20 +36,22 @@ public class Scene extends GLSurfaceView{
 	public Scene(Context context) {
 		super(context);
 		this.context = context;
+		
 		setEGLContextClientVersion(2);
-		if(renderer == null){
-			Bitmap b = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
-			renderer = new SceneRenderer(
-					Bitmap.createScaledBitmap(b, TextureHelper.findNextPowerOfTwo(b.getWidth()), TextureHelper.findNextPowerOfTwo(b.getHeight()), true)
-					);
-		}
+		setEGLConfigChooser(8, 8, 8, 8, 16, 0);
+		getHolder().setFormat(PixelFormat.TRANSLUCENT);
+		setZOrderOnTop(true);
+		
+		if(renderer == null)
+			renderer = new SceneRenderer(context);
+		
 		final DisplayMetrics displayMetrics = new DisplayMetrics();
 		((WindowManager)context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay().getMetrics(displayMetrics);
 		translationFactor = displayMetrics.densityDpi;
 		
 		setRenderer(renderer);
-		//setRenderMode(RENDERMODE_WHEN_DIRTY);
-		setRenderMode(RENDERMODE_CONTINUOUSLY);
+		setRenderMode(RENDERMODE_WHEN_DIRTY);
+		//setRenderMode(RENDERMODE_CONTINUOUSLY);
 		
 		gDetector = new GestureDetector(context,new OnGestureListener(){
 			@Override
@@ -73,13 +74,13 @@ public class Scene extends GLSurfaceView{
 					float disX, float disY) {
 				final float x = -disX;
 				final float y = disY;
-				queueEvent(new Runnable() {
-					public void run() {
-						renderer.postModelTranslate(x/translationFactor, y/translationFactor);
-						//renderer.postModelTranslate(x, y);
-					}
-				});
-				requestRender();
+//				queueEvent(new Runnable() {
+//					public void run() {
+//						renderer.postModelTranslate(x/translationFactor, y/translationFactor);
+//						//renderer.postModelTranslate(x, y);
+//					}
+//				});
+//				requestRender();
 				return true;
 			}
 
@@ -94,9 +95,14 @@ public class Scene extends GLSurfaceView{
 		});
 	}
 	
+	public void onDestroy(){
+		renderer.onDestroy();
+	}
+	
 	@Override
 	public boolean onTouchEvent(MotionEvent event){
-		return gDetector.onTouchEvent(event);
+		//return gDetector.onTouchEvent(event);
+		return false;
 	}
 
 	private class SceneRenderer implements Renderer{
@@ -106,11 +112,9 @@ public class Scene extends GLSurfaceView{
 		private int mFragHandle = 0;
 		private int mTextureUniformHandle = 0;
 		
-		private float[] mModelMatrix = new float[16];
 		private float[] mViewMatrix = new float[16];
 		private float[] mProjectionMatrix = new float[16];
 		private float[] mMVPMatrix = new float[16];
-		private float[] mTemporaryMatrix = new float[16];
 		
 		private float[] mEyeMatrix = new float[3];
 		private float[] mLookMatrix = new float[3];
@@ -120,46 +124,34 @@ public class Scene extends GLSurfaceView{
 		private int mPositionHandle = 0;
 		private int mTextureCoordinateHandle = 0;
 		
-		private Balloon balloonModel;
-		private Circle circleModel;
+		//private Balloon balloonModel;
+		//private Circle circleModel;
 		
 		private TexturedRectangle[] stars;
 		
-		private Bitmap balloonImage;
+		//private Bitmap balloonImage;
 		
-		public SceneRenderer(Bitmap b){
-			balloonImage = b;
+		public SceneRenderer(Context c){
+			//Bitmap b = BitmapFactory.decodeResource(getResources(), R.drawable.ic_launcher);
+			//balloonImage = Bitmap.createScaledBitmap(b, TextureHelper.findNextPowerOfTwo(b.getWidth()), TextureHelper.findNextPowerOfTwo(b.getHeight()), true);
 		}
 		
-		private float tmpVal= 20f;
 		@Override
 		public void onDrawFrame(GL10 gl) {
 			GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT | GLES20.GL_DEPTH_BUFFER_BIT);			                                    
-			 
-			//tmpVal-=1f;
-		    //System.out.println("current z trans: " + tmpVal);
-		    //Matrix.translateM(mModelMatrix, 0, 0.0f, 0.0f, -1f);
-		    //Matrix.rotateM(mModelMatrix, 0, 5, 1, 0, 0);
-			    
-//	        Matrix.multiplyMM(mMVPMatrix, 0, mViewMatrix, 0, mModelMatrix, 0);
-//	        Matrix.multiplyMM(mTemporaryMatrix, 0, mProjectionMatrix, 0, mMVPMatrix, 0);
-//			System.arraycopy(mTemporaryMatrix, 0, mMVPMatrix, 0, 16);
-//
-//			// Pass in the combined matrix.
-//			GLES20.glUniformMatrix4fv(mMVPMatrixHandle, 1, false, mMVPMatrix, 0);
 		    
 			// Set the active texture unit to texture unit 0.
 		    GLES20.glActiveTexture(GLES20.GL_TEXTURE0);
 		    
-		    if (balloonModel != null) {
-		    	balloonModel.render();
-			}
-		    
-		    if(circleModel != null)
-		    	circleModel.render();
+//		    if (balloonModel != null) {
+//		    	balloonModel.render();
+//			}
+//		    
+//		    if(circleModel != null)
+//		    	circleModel.render();
 		    
 		    for(int i=0;i<stars.length;i++){
-		    	stars[i].postModelTranslate(0, 0, -0.5f);
+		    	//stars[i].postModelTranslate(0, 0, -0.5f);
 		    	stars[i].updateMVP(mViewMatrix, mProjectionMatrix, mMVPMatrix);
 		    	stars[i].render();
 		    }
@@ -186,21 +178,25 @@ public class Scene extends GLSurfaceView{
 		@Override
 		public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 			// Set the background clear color to black.
-			GLES20.glClearColor(0.0f, 1.0f, 0.0f, 0.5f);
+			GLES20.glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 			
 			// Use culling to remove back faces.
-			//GLES20.glEnable(GLES20.GL_CULL_FACE);
+			GLES20.glEnable(GLES20.GL_CULL_FACE);
 			
 			// Enable depth testing
-			//GLES20.glEnable(GLES20.GL_DEPTH_TEST);						
+			//GLES20.glEnable(GLES20.GL_DEPTH_TEST);	
+			
+			// Enable blending ( trying to get rid of the transparent part of the texture on model )
+			GLES20.glEnable(GLES20.GL_BLEND);
+			GLES20.glBlendFunc(GLES20.GL_SRC_ALPHA, GLES20.GL_ONE_MINUS_SRC_ALPHA);
 			
 			// Position the eye in front of the origin.
-			mEyeMatrix[0] = 0.0f;
+			mEyeMatrix[0] = 2.5f;
 			mEyeMatrix[1] = 0.0f;
 			mEyeMatrix[2] = -0.5f;// <= -0.5f seems to work
 
 			// We are looking toward the distance
-			mLookMatrix[0] = 0.0f;
+			mLookMatrix[0] = 2.5f;
 			mLookMatrix[1] = 0.0f;
 			mLookMatrix[2] = -5.0f;
 
@@ -233,10 +229,6 @@ public class Scene extends GLSurfaceView{
 		    System.gc();
 		}
 		
-		public void postModelTranslate(float dx, float dy){
-			Matrix.translateM(mModelMatrix, 0, dx, dy, 0);
-		}
-		
 		private void generateStarModels(){
 			int numStars = 20;
 			stars = new TexturedRectangle[numStars]; 
@@ -246,10 +238,16 @@ public class Scene extends GLSurfaceView{
 			int textureHandle = TextureHelper.loadTexture(context, b);
 			
 			for(int i = 0;i<numStars;i++){
-				int scale = randomGenerator.nextInt(350);
+				int scale = randomGenerator.nextInt(5);
 				
-				Vector3D offset = new Vector3D(randomGenerator.nextFloat()*scale,randomGenerator.nextFloat()*scale,randomGenerator.nextFloat()*2f);
+				Vector3D offset = new Vector3D(randomGenerator.nextFloat()*scale,randomGenerator.nextFloat()*scale,-randomGenerator.nextFloat()*50f);
 				stars[i] = new TexturedRectangle(scale,scale,offset,mPositionHandle,mTextureCoordinateHandle,textureHandle,mTextureUniformHandle);
+			}
+		}
+		
+		public void onDestroy(){
+			for(TexturedRectangle t : stars){
+				t.release();
 			}
 		}
 	}
