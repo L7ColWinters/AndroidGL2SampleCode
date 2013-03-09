@@ -12,12 +12,18 @@ public class TexturedRectangle extends GLModelInterface {
 	private int mSquarePositionsBufferIdx;
 	private int mSquareTexCoordsBufferIdx;
 	
+	private float rectangleWidth;
+	private Vector3D rectangleOrigin;
+	
 	public TexturedRectangle(float bitmapWidth, float bitmapHeight,Vector3D offset,int positionHandle,int texCoord,int dataHandle, int uniformHandle){
 		super(2);
 		mPositionHandle = positionHandle;
 		mTextureCoordHandle = texCoord;
 		mTextureDataHandle = dataHandle;
 		mTextureUniformHandle = uniformHandle;
+		
+		rectangleWidth = bitmapWidth;
+		rectangleOrigin = offset;
 		
 		FloatBuffer data = createObject(offset,new float[]{bitmapWidth,bitmapHeight});
 		FloatBuffer texCoords = createTexCoords();
@@ -94,6 +100,22 @@ public class TexturedRectangle extends GLModelInterface {
 			1f,1f
 		};
 		return getBufferFromArray(mTextureCoords);
+	}
+
+	public float getRectangleWidth() {
+		return rectangleWidth;
+	}
+	
+	public void setRectangleWidth(float width){
+		rectangleWidth = width;
+	}
+
+	public Vector3D getRectangleOrigin() {
+		return rectangleOrigin;
+	}
+	
+	public void setRectangleOrigin(Vector3D offset){
+		rectangleOrigin = offset;
 	}
 
 }

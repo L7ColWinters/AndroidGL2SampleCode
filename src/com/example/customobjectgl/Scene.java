@@ -7,6 +7,7 @@ import javax.microedition.khronos.opengles.GL10;
 
 import beans.Vector3D;
 
+import GLEffect.ExplosionEffect;
 import GLModels.Balloon;
 import GLModels.Circle;
 import GLModels.GLModelInterface;
@@ -50,8 +51,8 @@ public class Scene extends GLSurfaceView{
 		translationFactor = displayMetrics.densityDpi;
 		
 		setRenderer(renderer);
-		setRenderMode(RENDERMODE_WHEN_DIRTY);
-		//setRenderMode(RENDERMODE_CONTINUOUSLY);
+		//setRenderMode(RENDERMODE_WHEN_DIRTY);
+		setRenderMode(RENDERMODE_CONTINUOUSLY);
 		
 		gDetector = new GestureDetector(context,new OnGestureListener(){
 			@Override
@@ -127,7 +128,8 @@ public class Scene extends GLSurfaceView{
 		//private Balloon balloonModel;
 		//private Circle circleModel;
 		
-		private TexturedRectangle[] stars;
+		//private TexturedRectangle[] stars;
+		private ExplosionEffect nathanExplosion;
 		
 		//private Bitmap balloonImage;
 		
@@ -150,11 +152,13 @@ public class Scene extends GLSurfaceView{
 //		    if(circleModel != null)
 //		    	circleModel.render();
 		    
-		    for(int i=0;i<stars.length;i++){
-		    	//stars[i].postModelTranslate(0, 0, -0.5f);
-		    	stars[i].updateMVP(mViewMatrix, mProjectionMatrix, mMVPMatrix);
-		    	stars[i].render();
-		    }
+//		    for(int i=0;i<stars.length;i++){
+//		    	//stars[i].postModelTranslate(0, 0, -0.5f);
+//		    	stars[i].updateMVP(mViewMatrix, mProjectionMatrix, mMVPMatrix);
+//		    	stars[i].render();
+//		    }
+		    if(nathanExplosion != null)
+		    	nathanExplosion.explodeStep(mViewMatrix, mProjectionMatrix, mMVPMatrix);
 		}
 
 		@Override
@@ -225,30 +229,33 @@ public class Scene extends GLSurfaceView{
 		    //balloonModel = new Balloon(context,mPositionHandle,mTextureCoordinateHandle,TextureHelper.loadTexture(context, balloonImage),mTextureUniformHandle);
 		    //circleModel = new Circle(mPositionHandle);
 		    GLModelInterface.setMVPMatrixHandle(mMVPMatrixHandle);
-		    generateStarModels();
+		    nathanExplosion = new ExplosionEffect(context,new Vector3D(3f,2f,-2f),
+		    		mPositionHandle,mTextureCoordinateHandle,mTextureUniformHandle,8,10,0f,0f);
+		    //generateStarModels();
 		    System.gc();
 		}
 		
-		private void generateStarModels(){
-			int numStars = 20;
-			stars = new TexturedRectangle[numStars]; 
-			Random randomGenerator = new Random();
-			
-			Bitmap b = BitmapFactory.decodeResource(getResources(), R.drawable.star);
-			int textureHandle = TextureHelper.loadTexture(context, b);
-			
-			for(int i = 0;i<numStars;i++){
-				int scale = randomGenerator.nextInt(5);
-				
-				Vector3D offset = new Vector3D(randomGenerator.nextFloat()*scale,randomGenerator.nextFloat()*scale,-randomGenerator.nextFloat()*50f);
-				stars[i] = new TexturedRectangle(scale,scale,offset,mPositionHandle,mTextureCoordinateHandle,textureHandle,mTextureUniformHandle);
-			}
-		}
+//		private void generateStarModels(){
+//			int numStars = 20;
+//			stars = new TexturedRectangle[numStars]; 
+//			Random randomGenerator = new Random();
+//			
+//			Bitmap b = BitmapFactory.decodeResource(getResources(), R.drawable.star);
+//			int textureHandle = TextureHelper.loadTexture(context, b);
+//			
+//			for(int i = 0;i<numStars;i++){
+//				int scale = randomGenerator.nextInt(5);
+//				
+//				Vector3D offset = new Vector3D(randomGenerator.nextFloat()*scale,randomGenerator.nextFloat()*scale,-randomGenerator.nextFloat()*50f);
+//				stars[i] = new TexturedRectangle(scale,scale,offset,mPositionHandle,mTextureCoordinateHandle,textureHandle,mTextureUniformHandle);
+//			}
+//		}
 		
 		public void onDestroy(){
-			for(TexturedRectangle t : stars){
-				t.release();
-			}
+			nathanExplosion.onDestroy();
+//			for(TexturedRectangle t : stars){
+//				t.release();
+//			}
 		}
 	}
 	
